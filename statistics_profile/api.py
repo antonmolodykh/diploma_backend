@@ -4,7 +4,7 @@ from rest.methods import rest_method
 from accessory_service.settings import CLIENT_SECRET
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
-from accounts.models import Account
+from accounts.models import Profile
 from instagram.client import InstagramAPI
 from statistics_profile.models import Statistics
 import datetime
@@ -13,17 +13,17 @@ import json
 @rest_method("GET")
 def test(request):
     # Аутентификация
-    account = Account.from_request(request)
+    profile = Profile.from_request(request)
     print('one')
-    if account is None:
+    if profile is None:
         raise Exception("Залогиньтесь, сударь!")
-    api = InstagramAPI(access_token=account.access_token, client_secret=CLIENT_SECRET)
+    api = InstagramAPI(access_token=profile.access_token, client_secret=CLIENT_SECRET)
 
     # Инфа по юзеру
-    user = api.user(account.id)
-    count_media = user.counts['media']
-    follows = user.counts['follows']
-    followed_by = user.counts['followed_by']
+    account = api.user(profile.id)
+    count_media = account.counts['media']
+    follows = account.counts['follows']
+    followed_by = account.counts['followed_by']
 
     # Сортировки
     def sort_by_like(target):
@@ -33,9 +33,9 @@ def test(request):
         return target.comment_count
 
     # Получаем все медиа
-    all_media, next_ = api.user_recent_media(user_id=account.id)
+    all_media, next_ = api.user_recent_media(user_id=profile.id)
     while next_:
-        more_media, next_ = api.user_recent_media(user_id=account.id, with_next_url=next_)
+        more_media, next_ = api.user_recent_media(user_id=profile.id, with_next_url=next_)
         all_media.extend(more_media)
 
     # Инициализация основных параментров
@@ -109,9 +109,9 @@ def test(request):
     response = {}
 
     profile = {
-        'username': user.username,
-        'full_name': user.full_name,
-        'profile_picture': user.profile_picture,
+        'username': account.username,
+        'full_name': account.full_name,
+        'profile_picture': account.profile_picture,
     }
     report = {
         'follows': follows,

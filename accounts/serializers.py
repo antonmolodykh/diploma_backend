@@ -1,7 +1,7 @@
 from rest.serializers import serializable, optional, Serializer
 
 
-class AccountSerializer(Serializer):
+class ProfileSerializer(Serializer):
     def __init__(self, account):
         self.account = account
 

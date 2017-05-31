@@ -4,7 +4,7 @@ from rest.methods import rest_method
 from django.contrib import auth
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
-from accounts.models import Account
+from accounts.models import Profile
 import requests
 import json
 
@@ -13,7 +13,7 @@ import json
 def account_register(request, email, password, access_token):
     # Пользователь должен выйти из системы перед регистрацией
     print ("test")
-    if Account.from_request(request) is not None:
+    if Profile.from_request(request) is not None:
         raise Exception("Вы уже зарегистрированы")
 
     if User.objects.filter(email=email).first() is not None:
@@ -33,7 +33,7 @@ def account_register(request, email, password, access_token):
     user = User.objects.create_user(email=email, username=email, password=password)
 
     # Создаем профиль пользователя
-    account = Account(
+    profile = Profile(
         id=id,
         access_token=access_token,
         username=username,
@@ -45,12 +45,12 @@ def account_register(request, email, password, access_token):
     auth.login(request, user)
 
     # Возвращаем созданный профиль
-    return JsonResponse(account.serialize())
+    return JsonResponse(profile.serialize())
 
 
 @rest_method("POST", "GET")
 def account_login(request, email, password):
-    account = Account.from_request(request)
+    account = Profile.from_request(request)
     if account is not None:
         return JsonResponse(account.serializer.serialize())
 
@@ -61,7 +61,7 @@ def account_login(request, email, password):
 
     auth.login(request, user)
 
-    account = Account.objects.filter(user=user).first()
+    account = Profile.objects.filter(user=user).first()
     return JsonResponse(account.serializer.serialize())
 
 

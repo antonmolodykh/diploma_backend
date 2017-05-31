@@ -1,10 +1,10 @@
 from django.contrib import auth
 from django.db import models
 from django.contrib.auth.models import User
-from accounts.serializers import AccountSerializer
+from accounts.serializers import ProfileSerializer
 
 
-class Account(models.Model):
+class Profile(models.Model):
     class Meta:
         db_table = 'accounts'
 
@@ -29,7 +29,7 @@ class Account(models.Model):
     # Сериализатор
     @property
     def serializer(self):
-        return AccountSerializer(self)
+        return ProfileSerializer(self)
 
     # Получить профиль пользователя из пользователя
     @staticmethod
@@ -41,4 +41,4 @@ class Account(models.Model):
     # Получить профиль пользователя из запроса
     @staticmethod
     def from_request(request):
-        return Account.from_user(auth.get_user(request))
+        return Profile.from_user(auth.get_user(request))

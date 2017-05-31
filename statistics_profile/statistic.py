@@ -4,31 +4,32 @@ from rest.methods import rest_method
 from accessory_service.settings import CLIENT_SECRET
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
-from accounts.models import Account
+from accounts.models import Profile
 from instagram.client import InstagramAPI
 from statistics_profile.models import Statistics
 import json
 
 
 def statistics(user):
-    api = InstagramAPI(access_token=user.access_token, client_secret=CLIENT_SECRET)
-    user = api.user(user.id)
+    profile = Profile.objects.filter(user=user).first()
+    api = InstagramAPI(access_token=profile.access_token, client_secret=CLIENT_SECRET)
 
-    count_media = user.counts['media']
-    follows = user.counts['follows']
-    followed_by = user.counts['followed_by']
+    account = api.user(profile.id)
+
+    count_media = account.counts['media']
+    follows = account.counts['follows']
+    followed_by = account.counts['followed_by']
 
     # Получаем все медиа
-    all_media, next_ = api.user_recent_media(user_id=user.id)
+    all_media, next_ = api.user_recent_media(user_id=profile.id)
     while next_:
-        more_media, next_ = api.user_recent_media(user_id=user.id, with_next_url=next_)
+        more_media, next_ = api.user_recent_media(user_id=profile.id, with_next_url=next_)
         all_media.extend(more_media)
 
     likes = 0
     comments = 0
     count_video = 0
     count_images = 0
-    last_media = []
 
     for media in all_media:
         likes += media.like_count
@@ -44,7 +45,7 @@ def statistics(user):
     # показатель вовлеченности
     involvement = follows / len(all_media)
 
-    last = Statistics.objects.filter(account=user).last()
+    last = Statistics.objects.filter(profile=profile).last()
 
     follows_change = last.follows - follows
 
