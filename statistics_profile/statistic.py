@@ -10,8 +10,8 @@ from statistics_profile.models import Statistics
 import json
 
 
-def statistics(user):
-    profile = Profile.objects.filter(user=user).first()
+def statistics(profile):
+    profile = profile
     api = InstagramAPI(access_token=profile.access_token, client_secret=CLIENT_SECRET)
 
     account = api.user(profile.id)
@@ -28,14 +28,14 @@ def statistics(user):
 
     likes = 0
     comments = 0
-    count_video = 0
+    count_videos = 0
     count_images = 0
 
     for media in all_media:
         likes += media.like_count
         comments += media.comment_count
         if media.type == "video":
-            count_video += 1
+            count_videos += 1
         if media.type == "image":
             count_images += 1
 
@@ -43,9 +43,27 @@ def statistics(user):
     likes_average = likes / len(all_media)
 
     # показатель вовлеченности
-    involvement = follows / len(all_media)
+    involvement = follows / likes_average
 
     last = Statistics.objects.filter(profile=profile).last()
+    if last is not None:
+        follows_change = last.follows - follows
+    else:
+        follows_change = None
 
-    follows_change = last.follows - follows
+    statistics = Statistics(
+        profile=profile,
+        likes=likes,
+        likes_average=likes_average,
+        comments=comments,
+        follows=follows,
+        followed_by=followed_by,
+        count_media=count_media,
+        count_images=count_images,
+        count_videos=count_videos,
+        involvement=involvement,
+        follows_change=follows_change
+    )
+    statistics.save()
 
+    return JsonResponse(statistics.serializer.serialize())

@@ -45,6 +45,14 @@ class ProfileSerializer(Serializer):
     def profile_picture(self, value):
         self.account.profile_picture = value
 
+    @serializable()
+    def hour(self):
+        return self.account.hour
+
+    @optional(hour)
+    def hour(self, value):
+        self.account.hour = value
+
     def validate(self):
         self.account.full_clean(exclude=["user"])
         return super().validate()

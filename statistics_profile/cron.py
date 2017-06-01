@@ -1,9 +1,12 @@
-from statistics_profile.models import Statistics
+import datetime
+
+from accounts.models import Profile
+from statistics_profile.statistic import statistics
 
 
 def scheduler():
-    statistic = Statistics(
-        likes=22
-    )
-    statistic.save()
-
+    hour = datetime.datetime.now().hour
+    all_profiles = Profile.objects.all()
+    for profile in all_profiles:
+        if profile.hour == hour:
+            statistics(profile)

@@ -1,3 +1,5 @@
+import random
+
 from accessory_service.response import ResponseHelper
 from django.http import JsonResponse
 from rest.methods import rest_method
@@ -29,6 +31,7 @@ def account_register(request, email, password, access_token):
     full_name = user_data['full_name']
     profile_picture = user_data['profile_picture']
 
+    hour = random.randint(0,23)
     # Регистрируем пользователя
     user = User.objects.create_user(email=email, username=email, password=password)
 
@@ -39,7 +42,8 @@ def account_register(request, email, password, access_token):
         username=username,
         full_name=full_name,
         user=user,
-        profile_picture=profile_picture
+        profile_picture=profile_picture,
+        hour=hour
     ).serializer.create().validate().save()
 
     auth.login(request, user)

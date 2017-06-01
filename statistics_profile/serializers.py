@@ -39,7 +39,7 @@ class StatisticsSerializer(Serializer):
 
     @serializable()
     def involvement(self):
-        return self.statistics.Involvement
+        return self.statistics.involvement
 
     @serializable()
     def follows_change(self):

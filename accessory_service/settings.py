@@ -95,7 +95,7 @@ DATABASES = {
 
 
 CRONJOBS = [
-    ('40 * * * *', 'statistics_profile.cron.scheduler')
+    ('*/1 * * * *', 'statistics_profile.cron.scheduler')
 ]
 
 # Password validation

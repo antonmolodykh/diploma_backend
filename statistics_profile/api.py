@@ -10,6 +10,9 @@ from statistics_profile.models import Statistics
 import datetime
 import json
 
+from statistics_profile.statistic import statistics
+
+
 @rest_method("GET")
 def test(request):
     # Аутентификация
@@ -132,5 +135,55 @@ def test(request):
     }
     response["profile"] = profile
     response["report"] = report
+
+    return JsonResponse(response)
+
+@rest_method("GET")
+def test2(request):
+    profile = Profile.from_request(request)
+    print('one')
+    if profile is None:
+        raise Exception("Залогиньтесь, сударь!")
+
+    return statistics(profile)
+
+
+@rest_method("GET")
+def test3(request, count=7):
+    profile = Profile.from_request(request)
+    print('one')
+    if profile is None:
+        raise Exception("Залогиньтесь, сударь!")
+
+    all_statistics = Statistics.objects.all()
+    if len(all_statistics) < count:
+        necessary_statistics = all_statistics
+    else:
+        necessary_statistics = all_statistics[:count]
+
+    response = {
+        'likes': [],
+        'likes_average': [],
+        'comments': [],
+        'follows': [],
+        'followed_by': [],
+        'count_media': [],
+        'count_images': [],
+        'count_videos': [],
+        'involvement': [],
+    }
+
+    for statistics in necessary_statistics:
+        response['likes'].append(statistics.likes)
+        response['likes_average'].append(statistics.likes_average)
+        response['comments'].append(statistics.comments)
+        response['follows'].append(statistics.follows)
+        response['followed_by'].append(statistics.followed_by)
+        response['count_media'].append(statistics.count_media)
+        response['count_images'].append(statistics.count_images)
+        response['count_videos'].append(statistics.count_videos)
+        response['involvement'].append(statistics.involvement)
+
+
 
     return JsonResponse(response)

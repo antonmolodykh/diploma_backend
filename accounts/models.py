@@ -26,6 +26,8 @@ class Profile(models.Model):
     # Avatar from Instagram
     profile_picture = models.CharField(max_length=100, blank=True)
 
+    hour = models.IntegerField(null=True)
+
     # Сериализатор
     @property
     def serializer(self):
