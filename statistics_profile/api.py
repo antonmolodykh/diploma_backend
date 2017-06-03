@@ -1,15 +1,10 @@
-from accessory_service.response import ResponseHelper
 from django.http import JsonResponse
 from rest.methods import rest_method
 from accessory_service.settings import CLIENT_SECRET
-from django.contrib.auth.hashers import check_password
-from django.contrib.auth.models import User
 from accounts.models import Profile
 from instagram.client import InstagramAPI
 from statistics_profile.models import Statistics
 import datetime
-import json
-
 from statistics_profile.statistic import statistics
 
 
@@ -17,7 +12,6 @@ from statistics_profile.statistic import statistics
 def get_report(request):
     # Аутентификация
     profile = Profile.from_request(request)
-    print('one')
     if profile is None:
         raise Exception("Залогиньтесь, сударь!")
     api = InstagramAPI(access_token=profile.access_token, client_secret=CLIENT_SECRET)
@@ -28,19 +22,8 @@ def get_report(request):
     follows = account.counts['follows']
     followed_by = account.counts['followed_by']
 
-    # Сортировки
-    def sort_by_like(target):
-        return target.like_count
-
-    def sort_by_comments(target):
-        return target.comment_count
-
     # Получаем все медиа
-    try:
-        all_media, next_ = api.user_recent_media(user_id=profile.id)
-    except Exception as e:
-        ass = e
-        print(e)
+    all_media, next_ = api.user_recent_media(user_id=profile.id)
     while next_:
         more_media, next_ = api.user_recent_media(user_id=profile.id, with_next_url=next_)
         all_media.extend(more_media)
@@ -51,8 +34,10 @@ def get_report(request):
     count_video = 0
     count_photo = 0
     prepare_hours = [[0, 0] for i in range(24)]
-    tags = []
-    filters = []
+    filters_dict = {}
+    filters_list = []
+    tags_dict = {}
+    tags_list = []
     last_media = []
 
     # обработка всех медиа
@@ -68,6 +53,40 @@ def get_report(request):
         prepare_hours[media.created_time.hour][0] += 1
         prepare_hours[media.created_time.hour][1] += media.like_count
 
+        # фильтры
+        if filters_dict.get(media.filter):
+            filters_dict[media.filter][0] += 1
+            filters_dict[media.filter][1] += media.like_count
+        else:
+            filters_dict[media.filter] = [1, media.like_count]
+
+        # хэштеги
+        for tag in media.tags:
+            if tags_dict.get(tag.name):
+                tags_dict[tag.name][0] += 1
+                tags_dict[tag.name][1] += media.like_count
+            else:
+                tags_dict[tag.name] = [1, media.like_count]
+
+    # формирование списка фильтров
+    for key, value in filters_dict.items():
+        filters_list.append((key, value[1]/value[0]))
+    filters_list.sort(key=lambda x: x[1], reverse=True)
+
+    if len(filters_list) > 3:
+        filters = [a for a, b in filters_list[:3]]
+    else:
+        filters = [a for a, b in filters_list]
+
+    # формирование списка тегов
+    for key, value in tags_dict.items():
+        tags_list.append((key, value[1] / value[0]))
+        tags_list.sort(key=lambda x: x[1], reverse=True)
+
+    if len(tags_list) > 10:
+        tags = [a for a, b in tags_list[:10]]
+    else:
+        tags = [a for a, b in tags_list]
 
     # распределение по времени в преглядном виде
     hours = [b/a if a is not 0 else 0 for a, b in prepare_hours]
@@ -89,7 +108,7 @@ def get_report(request):
 
 
     # самые обсуждаемые медиа
-    all_media.sort(key=sort_by_comments, reverse=True)
+    all_media.sort(key=lambda x: x.comment_count, reverse=True)
     max_comments = all_media[:3]
     max_comments_images = []
     for media in max_comments:
@@ -100,7 +119,7 @@ def get_report(request):
         })
 
     # самые популярные медиа
-    all_media.sort(key=sort_by_like, reverse=True)
+    all_media.sort(key=lambda x: x.like_count, reverse=True)
     max_like = all_media[:3]
 
     max_like_images = []
@@ -110,8 +129,6 @@ def get_report(request):
             'like_count': media.like_count,
             'comment_count': media.comment_count
         })
-        tags.extend([tag.name for tag in media.tags])
-        filters.append(media.filter)
 
 
     # Среднее вол-во лайков
