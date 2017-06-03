@@ -14,7 +14,7 @@ from statistics_profile.statistic import statistics
 
 
 @rest_method("GET")
-def test(request):
+def get_report(request):
     # Аутентификация
     profile = Profile.from_request(request)
     print('one')
@@ -36,7 +36,11 @@ def test(request):
         return target.comment_count
 
     # Получаем все медиа
-    all_media, next_ = api.user_recent_media(user_id=profile.id)
+    try:
+        all_media, next_ = api.user_recent_media(user_id=profile.id)
+    except Exception as e:
+        ass = e
+        print(e)
     while next_:
         more_media, next_ = api.user_recent_media(user_id=profile.id, with_next_url=next_)
         all_media.extend(more_media)
@@ -69,7 +73,7 @@ def test(request):
     hours = [b/a if a is not 0 else 0 for a, b in prepare_hours]
 
     # получаем вчерашний день
-    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+    yesterday = datetime.datetime.now() - datetime.timedelta(days=7)
 
     # последние медиа (за последний день)
     for media in all_media:
@@ -89,7 +93,11 @@ def test(request):
     max_comments = all_media[:3]
     max_comments_images = []
     for media in max_comments:
-        max_comments_images.append(media.images['thumbnail'].url)
+        max_comments_images.append({
+            'image': media.images['thumbnail'].url,
+            'like_count': media.like_count,
+            'comment_count': media.comment_count
+        })
 
     # самые популярные медиа
     all_media.sort(key=sort_by_like, reverse=True)
@@ -97,7 +105,11 @@ def test(request):
 
     max_like_images = []
     for media in max_like:
-        max_like_images.append(media.images['thumbnail'].url)
+        max_like_images.append({
+            'image': media.images['thumbnail'].url,
+            'like_count': media.like_count,
+            'comment_count': media.comment_count
+        })
         tags.extend([tag.name for tag in media.tags])
         filters.append(media.filter)
 
@@ -106,17 +118,10 @@ def test(request):
     likes_average = likes/len(all_media)
 
     # показатель вовлеченности
-    involvement = follows/len(all_media)
+    involvement = (likes_average/follows)*100
 
     # формирование отета
-    response = {}
-
-    profile = {
-        'username': account.username,
-        'full_name': account.full_name,
-        'profile_picture': account.profile_picture,
-    }
-    report = {
+    response = {
         'follows': follows,
         'followed_by': followed_by,
         'count_media': count_media,
@@ -133,10 +138,9 @@ def test(request):
         'hours': hours,
         'last_media': last_media
     }
-    response["profile"] = profile
-    response["report"] = report
 
     return JsonResponse(response)
+
 
 @rest_method("GET")
 def test2(request):
@@ -148,18 +152,18 @@ def test2(request):
     return statistics(profile)
 
 
-@rest_method("GET")
-def test3(request, count=7):
+@rest_method("POST")
+def get_statistics(request, count=7):
     profile = Profile.from_request(request)
     print('one')
     if profile is None:
         raise Exception("Залогиньтесь, сударь!")
 
     all_statistics = Statistics.objects.all()
-    if len(all_statistics) < count:
+    if len(all_statistics) < int(count):
         necessary_statistics = all_statistics
     else:
-        necessary_statistics = all_statistics[:count]
+        necessary_statistics = all_statistics[:int(count)]
 
     response = {
         'likes': [],

@@ -6,10 +6,10 @@ from accounts.serializers import ProfileSerializer
 
 class Profile(models.Model):
     class Meta:
-        db_table = 'accounts'
+        db_table = 'profile'
 
     # Владелец профиля
-    user = models.OneToOneField(User, related_name="account")
+    user = models.OneToOneField(User, related_name="profile")
 
     # Id from Instagram
     id = models.IntegerField(primary_key=True)
@@ -24,7 +24,7 @@ class Profile(models.Model):
     full_name = models.CharField(max_length=50, blank=True)
 
     # Avatar from Instagram
-    profile_picture = models.CharField(max_length=100, blank=True)
+    profile_picture = models.TextField(blank=True)
 
     hour = models.IntegerField(null=True)
 
@@ -36,8 +36,8 @@ class Profile(models.Model):
     # Получить профиль пользователя из пользователя
     @staticmethod
     def from_user(user):
-        if hasattr(user, "account"):
-            return user.account
+        if hasattr(user, "profile"):
+            return user.profile
         return None
 
     # Получить профиль пользователя из запроса

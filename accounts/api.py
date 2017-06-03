@@ -56,7 +56,7 @@ def account_register(request, email, password, access_token):
 def account_login(request, email, password):
     account = Profile.from_request(request)
     if account is not None:
-        return JsonResponse(account.serializer.serialize())
+        raise Exception("Прежде разлогиньтесь, сударь!")
 
     user = auth.authenticate(username=email, password=password)
 
@@ -69,7 +69,16 @@ def account_login(request, email, password):
     return JsonResponse(account.serializer.serialize())
 
 
-@rest_method("POST")
+@rest_method("GET")
 def account_logout(request):
     auth.logout(request)
     return ResponseHelper.success()
+
+
+@rest_method("GET")
+def account_my(request):
+    account = Profile.from_request(request)
+    if account is None:
+        raise Exception("Прежде залогиньтесь, сударь!")
+
+    return JsonResponse(account.serializer.serialize())

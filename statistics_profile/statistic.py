@@ -43,13 +43,7 @@ def statistics(profile):
     likes_average = likes / len(all_media)
 
     # показатель вовлеченности
-    involvement = follows / likes_average
-
-    last = Statistics.objects.filter(profile=profile).last()
-    if last is not None:
-        follows_change = last.follows - follows
-    else:
-        follows_change = None
+    involvement = (likes_average/follows)*100
 
     statistics = Statistics(
         profile=profile,
@@ -61,8 +55,7 @@ def statistics(profile):
         count_media=count_media,
         count_images=count_images,
         count_videos=count_videos,
-        involvement=involvement,
-        follows_change=follows_change
+        involvement=involvement
     )
     statistics.save()
 

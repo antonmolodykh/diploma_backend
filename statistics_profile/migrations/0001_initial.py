@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('count_images', models.IntegerField()),
                 ('count_videos', models.IntegerField()),
                 ('Involvement', models.DecimalField(decimal_places=4, max_digits=6)),
-                ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='accounts.Account')),
+                ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='accounts.Profile')),
             ],
             options={
                 'db_table': 'statistics',
