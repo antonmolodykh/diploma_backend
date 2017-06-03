@@ -83,8 +83,8 @@ def get_report(request):
         tags_list.append((key, value[1] / value[0]))
         tags_list.sort(key=lambda x: x[1], reverse=True)
 
-    if len(tags_list) > 10:
-        tags = [a for a, b in tags_list[:10]]
+    if len(tags_list) > 5:
+        tags = [a for a, b in tags_list[:5]]
     else:
         tags = [a for a, b in tags_list]
 
@@ -109,7 +109,7 @@ def get_report(request):
 
     # самые обсуждаемые медиа
     all_media.sort(key=lambda x: x.comment_count, reverse=True)
-    max_comments = all_media[:3]
+    max_comments = all_media[:8]
     max_comments_images = []
     for media in max_comments:
         max_comments_images.append({
@@ -120,7 +120,7 @@ def get_report(request):
 
     # самые популярные медиа
     all_media.sort(key=lambda x: x.like_count, reverse=True)
-    max_like = all_media[:3]
+    max_like = all_media[:8]
 
     max_like_images = []
     for media in max_like:
