@@ -134,7 +134,7 @@ def get_report(request):
         'max_comments': max_comments_images,
         'filters': filters,
         'likes_average': likes_average,
-        'involvement': involvement,
+        'involvement': round(involvement, 1),
         'hours': hours,
         'last_media': last_media
     }
