@@ -14,7 +14,6 @@ import json
 @rest_method("POST")
 def account_register(request, email, password, access_token):
     # Пользователь должен выйти из системы перед регистрацией
-    print ("test")
     if Profile.from_request(request) is not None:
         raise Exception("Вы уже зарегистрированы")
 
@@ -44,12 +43,12 @@ def account_register(request, email, password, access_token):
         user=user,
         profile_picture=profile_picture,
         hour=hour
-    ).serializer.create().validate().save()
+    ).save()
 
     auth.login(request, user)
 
     # Возвращаем созданный профиль
-    return JsonResponse(profile.serialize())
+    return ResponseHelper.success()
 
 
 @rest_method("POST", "GET")
@@ -65,8 +64,15 @@ def account_login(request, email, password):
 
     auth.login(request, user)
 
-    account = Profile.objects.filter(user=user).first()
-    return JsonResponse(account.serializer.serialize())
+    profile = Profile.objects.filter(user=user).first()
+    return JsonResponse({
+        'id': profile.id,
+        'access_token': profile.access_token,
+        'username': profile.username,
+        'full_name': profile.full_name,
+        'profile_picture': profile.profile_picture,
+        'hour': profile.hour
+    })
 
 
 @rest_method("GET")
@@ -77,8 +83,15 @@ def account_logout(request):
 
 @rest_method("GET")
 def account_my(request):
-    account = Profile.from_request(request)
-    if account is None:
+    profile = Profile.from_request(request)
+    if profile is None:
         raise Exception("Прежде залогиньтесь, сударь!")
 
-    return JsonResponse(account.serializer.serialize())
+    return JsonResponse({
+        'id': profile.id,
+        'access_token': profile.access_token,
+        'username': profile.username,
+        'full_name': profile.full_name,
+        'profile_picture': profile.profile_picture,
+        'hour': profile.hour
+    })

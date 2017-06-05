@@ -1,7 +1,6 @@
 from django.contrib import auth
 from django.db import models
 from django.contrib.auth.models import User
-from accounts.serializers import ProfileSerializer
 
 
 class Profile(models.Model):
@@ -27,11 +26,6 @@ class Profile(models.Model):
     profile_picture = models.TextField(blank=True)
 
     hour = models.IntegerField(null=True)
-
-    # Сериализатор
-    @property
-    def serializer(self):
-        return ProfileSerializer(self)
 
     # Получить профиль пользователя из пользователя
     @staticmethod

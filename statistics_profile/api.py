@@ -62,6 +62,8 @@ def get_report(request):
 
         # хэштеги
         for tag in media.tags:
+            if tag.name == 'дазаебисьвобщемта':
+                continue
             if tags_dict.get(tag.name):
                 tags_dict[tag.name][0] += 1
                 tags_dict[tag.name][1] += media.like_count
@@ -130,6 +132,8 @@ def get_report(request):
             'comment_count': media.comment_count
         })
 
+    # Среднее кол-во комментариев
+    comments_average = comments/len(all_media)
 
     # Среднее вол-во лайков
     likes_average = likes/len(all_media)
@@ -150,6 +154,7 @@ def get_report(request):
         'max_like': max_like_images,
         'max_comments': max_comments_images,
         'filters': filters,
+        'comments_average': comments_average,
         'likes_average': likes_average,
         'involvement': round(involvement, 1),
         'hours': hours,
@@ -183,6 +188,7 @@ def get_statistics(request, count=7):
         necessary_statistics = all_statistics[:int(count)]
 
     response = {
+        'hour': profile.hour,
         'likes': [],
         'likes_average': [],
         'comments': [],

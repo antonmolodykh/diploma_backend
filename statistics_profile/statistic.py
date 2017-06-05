@@ -58,5 +58,3 @@ def statistics(profile):
         involvement=involvement
     )
     statistics.save()
-
-    return JsonResponse(statistics.serializer.serialize())

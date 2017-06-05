@@ -1,6 +1,5 @@
 from django.db import models
 from accounts.models import Profile
-from statistics_profile.serializers import StatisticsSerializer
 
 
 class Statistics(models.Model):
@@ -26,7 +25,3 @@ class Statistics(models.Model):
     count_videos = models.IntegerField(null=True)
     # Показатель вовлеченности
     involvement = models.DecimalField(max_digits=6, decimal_places=4, null=True)
-
-    @property
-    def serializer(self):
-        return StatisticsSerializer(self)
